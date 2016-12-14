@@ -41,6 +41,8 @@ int main(int argc, char **argv)
     	clientlen = sizeof(struct sockaddr_storage); 
         connfdp = Malloc(sizeof(int));
     	*connfdp = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+
+        // læs fra fd, se om login / pass passer
         Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAXLINE, 
                     client_port, MAXLINE, 0);
         add_to_connect_list(client_hostname, client_port);	

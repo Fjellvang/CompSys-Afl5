@@ -3,7 +3,7 @@
  */
 /* $begin echo */
 #include "csapp.h"
-void isStringCommand(const char *c);
+int isStringCommand(char *c);
 
 void echo(int connfd) 
 {
@@ -24,17 +24,41 @@ void echo(int connfd)
     }
 }
 
-void isStringCommand(const char *c){
-    const char s[2] = " ";
+int isStringCommand(char *c){
+    char s[2] = " ";
     char *token;
+    // array of 4 strings. max 4 cmds
+    char strings[4][MAXLINE];
     token = strtok(c, s);
     int tkcnt = 0;    
     while ( token != NULL) {
-        printf(" %s\n", token);
+        if((tkcnt < 4)){
+            strcpy(strings[tkcnt], token);
+        } else {
+            printf("incorrect command\n");
+            return -1;
+        } 
         token = strtok(NULL, s);
         tkcnt++;
+            
     }
-    printf("nr of tokens: %i\n", tkcnt);
+    for(int i=0; i < tkcnt; i++){
+        printf("index: %i string: %s\n", i, strings[i]);
+    }
+    if(!strcmp(strings[0], "/join")){ /* We use !strcmp because strcmp returns 0 on equal string  */
+        printf("We got JOIN!\n");
+        return 0;
+    } else if(!strcmp(strings[0], "/lookup")){
+        printf("We got LOOKUP\n");
+        return 1;
+    } else if(!strcmp(strings[0], "/logout")) {
+        printf("we goot logout!");
+        return 2;
+    } else if(!strcmp(strings[0], "/exit")) {
+        printf("we got exit");
+        return 3;
+    } else {
+        printf("unrecognized");
+        return 4;
+    }
 }
-/* $end echo */
-
