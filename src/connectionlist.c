@@ -3,6 +3,7 @@
 static connected_t connected_list[MAXCONNECTIONS];
 
 
+//TODO save the assigned FD to the connected_t struct, and save it in add_to_connect_list maybe
 //TODO add function to remove peer from list. Maybe identified by his assigned FD?
 
 void init_connect_list(){
