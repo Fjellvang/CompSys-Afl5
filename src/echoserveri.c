@@ -3,7 +3,7 @@
  */ 
 /* $begin echoserverimain */
 #include "csapp.h"
-#include "connectionList.h"
+#include "connectionlist.h"
 
 void echo(int connfd);
 void *thread(void *vargp);
@@ -11,7 +11,7 @@ void *thread(void *vargp);
 
 int main(int argc, char **argv) 
 {
-    init_connect_list();
+    //init list for connections
     int listenfd, *connfdp;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;  /* Enough space for any address */  //line:netp:echoserveri:sockaddrstorage
