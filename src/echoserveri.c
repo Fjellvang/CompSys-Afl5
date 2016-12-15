@@ -83,7 +83,7 @@ int add_to_connect_list(char *client_hostname, char *client_port){
             strcpy(connected_list[i].client_port, client_port);
             strcpy(connected_list[i].client_hostname, client_hostname);
 	    return 1;
-        }
+            }
     }
     // not enough space
     printf("NO MOAR SPACE MAN \n");
