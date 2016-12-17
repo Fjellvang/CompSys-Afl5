@@ -13,7 +13,7 @@ echoclient : echoclient.c  csapp.o
 	$(CC) $(CFLAGS) $< commands.c *.o -o $@ $(LD_FLAGS)
 
 echoserveri : echoserveri.c echo.c  csapp.o
-	$(CC) $(CFLAGS) $< echo.c connectionlist.c *.o -o $@ $(LD_FLAGS)
+	$(CC) $(CFLAGS) $< echo.c connectionlist.c commands.c *.o -o $@ $(LD_FLAGS)
 
 clean :
 	rm -rf *.o echoclient echoserveri

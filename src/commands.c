@@ -1,44 +1,35 @@
-#include "commands.h"
 #include "csapp.h"
 
 // array to hold commands and their argument
 // max arguments for a command is currently 4
 char strings[5][MAXLINE];
 
-void init_strings(){
-    for(int i = 0; i < 5; i++) {
-        strcpy(strings[i], "0000");
-    }
-}
 
-int getCmd(char *c){
+int getCmd(char *c, cmd_t *command){
     char s[2] = " ";
     char *token;
     // array of 4 strings. max 4 cmds
     token = strtok(c, s);
-    int tkcnt = 0;    
+    command->numargs = 0;    
     while ( token != NULL) {
-        if((tkcnt < 5)){
-            strcpy(strings[tkcnt], token);
+        if((command->numargs < 5)){
+            strcpy(command->strings[command->numargs], token);
         } else {
-            printf("incorrect command\n");
+            printf("Too many arguments\n");
             return -1;
         } 
         token = strtok(NULL, s);
-        tkcnt++;
+        command->numargs++;
     }
     
-    for(int i=0; i < tkcnt; i++){
-        printf("index: %i string: %s\n", i, strings[i]);
-    }
-    return getcmdint(strings[0]);
+    return getcmdint(command->strings[0]);
 }
 int getcmdint(char *s){
     for(int i = 0; i < NROFCOMMANDS; i++){
         if(!strcmp(s, getcmdstring(i))){
             // DE matcher.
             return i;
-        }
+        } 
     }
     return -1;
 }
@@ -63,10 +54,22 @@ const char* getcmdstring(int i){
     }
 }
 
-int handlecmd(char *c){
+cmd_t handlecmd(char *c){
     char tmp[MAXLINE];
     strcpy(tmp, c);
-    int cmd = getCmd(tmp);
-    if(cmd == 0) return 1;
-    else return 0;
+    cmd_t command;
+    int cmd = getCmd(tmp, &command);
+
+    switch(cmd) {
+        case join_command:
+            if(command.numargs != 5){
+                printf("join: Too few arguments");
+            } 
+            return command;
+        case lookup_command:
+        case logout_command:
+        case exit_command:
+            break;
+    }
+    return command;
 }
