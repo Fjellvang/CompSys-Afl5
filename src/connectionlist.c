@@ -26,6 +26,18 @@ int add_to_connect_list(char *client_hostname, char *client_port){
     return -1;
 }
 
+int npeersconnected(){
+    //returns nr of peers connected
+    int n=0;
+    for(int i =0; i < MAXCONNECTIONS; i++){
+        if(connected_list[i].active == 1) {
+            n++;
+        }
+    }
+    return n;
+
+}
+
 void print_connected_list(){
     for(int i = 0; i < MAXCONNECTIONS; i++){
         if(connected_list[i].active == 1){

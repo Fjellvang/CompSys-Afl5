@@ -20,3 +20,6 @@ int add_to_connect_list(char *client_hostname, char *client_port);
 
 //prints the list of peers whose active field is set to 1
 void print_connected_list();
+
+//returns nr of peers conneccted
+int npeersconnected();

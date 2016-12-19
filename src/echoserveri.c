@@ -15,7 +15,7 @@ typedef struct {
 } user_t;
 
 user_t registered_users[MAXUSERS];
-int login(int connfd);
+int login(char *c);
 int checkLogin(char *username, char *password);
 
 int main(int argc, char **argv) 
@@ -66,43 +66,92 @@ void *thread(void *vargp){
     Pthread_detach(Pthread_self());
     Free(vargp);
     printf("FD is: %i\n", fd);
+    int exited = 0;
     int loggedin = 0;
+    rio_t rio;
+    rio_readinitb(&rio, fd);
+    size_t n; 
+    char buf[MAXLINE]; 
     char* msg = "You are currently not logged in. Please login or exit\n";
     Rio_writen(fd, msg, strlen(msg));
-    while(loggedin == 0) {
-        if(login(fd)){
-            loggedin=1;
-            char *msg = "login success\n";
-            Rio_writen(fd, msg, strlen(msg)); 
-        }else {
-            char *msg = "login refused\n";
-            Rio_writen(fd, msg, strlen(msg)); 
+    while(exited == 0) {
+        if((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) { //line:netp:echo:eof
+            if(buf[0] == '/') {
+                cmd_t command;
+                int cmd_i = getCmd(buf, &command);
+                if(cmd_i == join_command){
+                    if(checkLogin(command.strings[1], command.strings[2])) {
+                        loggedin=1;
+                        char *msg = "Login success\n";
+                        Rio_writen(fd, msg, strlen(msg)); 
+                    } else {
+                        char *msg = "Wrong username/password\n";
+                        Rio_writen(fd, msg, strlen(msg));
+                    }
+                } else if(cmd_i == exit_command) {
+                    char *msg = "You exited. BYE\n";
+                    Rio_writen(fd, msg, strlen(msg));
+                    exited = 1;
+                } else {
+                    char *msg = "Login refused\n";
+                    Rio_writen(fd, msg, strlen(msg)); 
+                }
+                while(loggedin == 1){
+                    if((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) { //line:netp:echo:eof
+                        if(buf[0] == '/') {
+                            // we have a command
+                            int cmd_i = getCmd(buf, &command);
+                            if(cmd_i == join_command) {
+                                char *msg = "You are already logged in\n";
+                                Rio_writen(fd, msg, strlen(msg));
+                            } else if(cmd_i == lookup_command) {
+                                if(command.numargs > 1){
+                                    //print hele listen.
+                                } else {
+                                    //print kun info for command.strings[1]
+                                }
+                            } else if(cmd_i == logout_command) {
+                                loggedin = 0;
+                                char *msg = "You logged out\n";
+                                Rio_writen(fd, msg, strlen(msg));
+                            } else if(cmd_i == exit_command) {
+                                loggedin = 0;
+                                exited = 1;
+                                char *msg = "You logged out, and exited\n";
+                                Rio_writen(fd, msg, strlen(msg));
+                            } else {
+                                char *msg = "Unrecognized command\n"; 
+                                Rio_writen(fd, msg, strlen(msg));
+                            }   
+                        } else {
+                                char *msg = "You didnt enter a command\n";
+                                Rio_writen(fd, msg, strlen(msg));
+                        }
+                    } 
+                }
+            } else{
+                    char *msg = "Please login with /join <username> <password> <IP> <port> or exit with /exit\n";
+                Rio_writen(fd, msg, strlen(msg));
+            }
         }
     }
-    echo(fd);
     // should remove peer from connected list here.
     Close(fd);
     return NULL;
 }
 
-int login(int connfd) 
+int login(char *c) 
 {
-    size_t n; 
-    char buf[MAXLINE]; 
     cmd_t command;
-    rio_t rio;
-    Rio_readinitb(&rio, connfd);
-    if((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) { //line:netp:echo:eof
-        if(getCmd(buf, &command) == join_command) {
-            // we have login... once again
-            if(checkLogin(command.strings[1], command.strings[2])){
-                printf("Login success!\n");
-                return 1;
-            }
-            else{ 
-                printf("Login refused");
-                return 0;
-            }
+    int cmd_i = getCmd(c, &command);
+    if(cmd_i == join_command) {
+        if(checkLogin(command.strings[1], command.strings[2])){
+            printf("Login success!\n");
+            return 1;
+        }
+        else{ 
+            printf("Login refused");
+            return 0;
         }
     }
     return 0;

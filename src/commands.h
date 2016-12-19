@@ -7,6 +7,7 @@
 typedef struct {
     char strings[5][MAXLINE];
     int numargs;
+    int cmd; //which command did we get?
 } cmd_t;
 
 enum cmds {
