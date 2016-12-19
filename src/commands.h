@@ -1,5 +1,5 @@
 // Increase this every time you add a command
-#define NROFCOMMANDS (4)
+#define NROFCOMMANDS (5)
 #ifndef MAXLINE
 #define MAXLINE 8192
 #endif
@@ -14,7 +14,8 @@ enum cmds {
     join_command,
     lookup_command,
     logout_command,
-    exit_command
+    exit_command,
+    lookup2_command
 };
 // if we have / as first char, we have a command. call this func on a string with a cmd
 cmd_t handlecmd(char *c);

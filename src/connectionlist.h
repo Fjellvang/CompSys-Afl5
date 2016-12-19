@@ -7,6 +7,7 @@
 typedef struct{
     char client_hostname[MAXLINE];
     char client_port[MAXLINE];
+    char nick[MAXLINE];
     int active;
 //TODO Add field for clients File Descriptor?
 } connected_t;
@@ -23,3 +24,6 @@ void print_connected_list();
 
 //returns nr of peers conneccted
 int npeersconnected();
+
+int prints_connected_list(char* tosend);
+

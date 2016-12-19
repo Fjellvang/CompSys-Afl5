@@ -1,5 +1,6 @@
 #include "connectionlist.h"
 
+
 static connected_t connected_list[MAXCONNECTIONS];
 
 
@@ -41,8 +42,28 @@ int npeersconnected(){
 void print_connected_list(){
     for(int i = 0; i < MAXCONNECTIONS; i++){
         if(connected_list[i].active == 1){
-            printf("Connected to (%s, %s)\n",
+            printf("connected to (%s, %s)\n",
                  connected_list[i].client_hostname, connected_list[i].client_port);
         }
     }
+}
+
+int prints_connected_list(char* tosend){
+    int nrOfnewline = 0;    
+    char tmp[MAXLINE];
+    int npeers = npeersconnected();
+    sprintf(tosend, "%i peers connected, The list follows\n", npeers);
+    nrOfnewline = nrOfnewline + 1;
+    for(int i = 0; i < MAXCONNECTIONS; i++){
+        if(connected_list[i].active == 1){
+            printf("active at i:%i\n", i);
+            printf("%s",tosend);
+            sprintf(tmp, "Host: %s\nPort: %s\n", connected_list[i].client_hostname, connected_list[i].client_port);
+            nrOfnewline = nrOfnewline + 2;
+            printf("%s",tmp);
+            strcat(tosend, tmp);
+        }
+        printf("inactive at i:%i\n", i);
+    }
+    return nrOfnewline;
 }

@@ -12,6 +12,7 @@ typedef struct {
 } client;
 
 
+void linestoread(int x, rio_t *rio);
 int main() 
 {
     int clientfd;
@@ -22,22 +23,22 @@ int main()
     //cmd_t command;
     clientfd = Open_clientfd(host, port);
     Rio_readinitb(&rio, clientfd);
-
     Rio_readlineb(&rio, buf, MAXLINE);
     Fputs(buf, stdout);
     while(Fgets(buf, MAXLINE, stdin) != NULL) {
         Rio_writen(clientfd, buf, strlen(buf));
         Rio_readlineb(&rio, buf, MAXLINE);
-        // maybe read a number that decides how many lines you should read and put.
-        Fputs(buf, stdout);
+        int toread = atoi(buf);
+        linestoread(toread, &rio);
     }
     Close(clientfd); //line:netp:echoclient:close
     exit(0);
     return 0;
 }
-void linestoread(int x, rio_t *rio, char *buf){
+void linestoread(int x, rio_t *rio){
+    char buf[MAXLINE];
     for(int i = 0; i < x; i++){
-        Rio_readlineb(rio, buf, strlen(buf));
+        Rio_readlineb(rio, buf, MAXLINE);
         Fputs(buf, stdout);
     } 
 

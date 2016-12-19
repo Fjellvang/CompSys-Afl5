@@ -25,6 +25,7 @@ int main(int argc, char **argv)
     strcpy(registered_users[0].pswrd, "password");
     //init list for connections
     init_connect_list();
+
     int listenfd, *connfdp;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;  /* Enough space for any address */  //line:netp:echoserveri:sockaddrstorage
@@ -82,18 +83,18 @@ void *thread(void *vargp){
                 if(cmd_i == join_command){
                     if(checkLogin(command.strings[1], command.strings[2])) {
                         loggedin=1;
-                        char *msg = "Login success\n";
+                        char *msg = "1\nLogin success\n";
                         Rio_writen(fd, msg, strlen(msg)); 
                     } else {
-                        char *msg = "Wrong username/password\n";
+                        char *msg = "1\nWrong username/password\n";
                         Rio_writen(fd, msg, strlen(msg));
                     }
                 } else if(cmd_i == exit_command) {
-                    char *msg = "You exited. BYE\n";
+                    char *msg = "1\nYou exited. BYE\n";
                     Rio_writen(fd, msg, strlen(msg));
                     exited = 1;
                 } else {
-                    char *msg = "Login refused\n";
+                    char *msg = "1\nLogin refused\n";
                     Rio_writen(fd, msg, strlen(msg)); 
                 }
                 while(loggedin == 1){
@@ -102,35 +103,41 @@ void *thread(void *vargp){
                             // we have a command
                             int cmd_i = getCmd(buf, &command);
                             if(cmd_i == join_command) {
-                                char *msg = "You are already logged in\n";
+                                char *msg = "1\nYou are already logged in\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == lookup_command) {
-                                if(command.numargs > 1){
-                                    //print hele listen.
-                                } else {
-                                    //print kun info for command.strings[1]
-                                }
+                                
                             } else if(cmd_i == logout_command) {
                                 loggedin = 0;
-                                char *msg = "You logged out\n";
+                                char *msg = "1\nYou logged out\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == exit_command) {
                                 loggedin = 0;
                                 exited = 1;
-                                char *msg = "You logged out, and exited\n";
+                                char *msg = "1\nYou logged out, and exited\n";
                                 Rio_writen(fd, msg, strlen(msg));
+                            } else if(cmd_i == lookup2_command) {
+                                printf("start of LP2\n");
+                                char msg[MAXLINE];
+                                int toPrint = prints_connected_list(msg);
+                                char send[20];
+                                printf("after prints\n");
+                                sprintf(send, "%i\n", toPrint);
+                                strcat(send, msg);
+                                printf("before write");
+                                Rio_writen(fd, send, strlen(send));
                             } else {
-                                char *msg = "Unrecognized command\n"; 
+                                char *msg = "1\nUnrecognized command\n"; 
                                 Rio_writen(fd, msg, strlen(msg));
                             }   
                         } else {
-                                char *msg = "You didnt enter a command\n";
+                                char *msg = "1\nYou didnt enter a command\n";
                                 Rio_writen(fd, msg, strlen(msg));
                         }
                     } 
                 }
             } else{
-                    char *msg = "Please login with /join <username> <password> <IP> <port> or exit with /exit\n";
+                    char *msg = "1\nPlease login with /join <username> <password> <IP> <port> or exit with /exit\n";
                 Rio_writen(fd, msg, strlen(msg));
             }
         }
