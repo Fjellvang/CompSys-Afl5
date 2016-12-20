@@ -60,8 +60,7 @@ void print_connected_list(){
 }
 int print_user_info(char *nick, char *tosend) {
     int nrOfnewline = 1;
-    char* name = strtok(nick, "\n");
-    printf("name newline: %s or no\n", name);
+    strtok(nick, "\n");
     for(int i = 0; i < MAXCONNECTIONS; i++) {
         if(!strcmp(connected_list[i].nick, nick)) {
             sprintf(tosend, "%s is online\nHost: %s\nPort: %s\n", nick, 
@@ -72,7 +71,7 @@ int print_user_info(char *nick, char *tosend) {
         }
     }
     sprintf(tosend, "%s is not a valid user\n", nick);
-    nrOfnewline = nrOfnewline + 1;
+    //nrOfnewline = nrOfnewline + 2;
     return nrOfnewline;
 }
 

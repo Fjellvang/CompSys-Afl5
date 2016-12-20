@@ -31,6 +31,8 @@ int main(int argc, char **argv)
     //init list for connections
     init_connect_list();
 
+    //Init semamphore 
+    Sem_init(&mutex, 0, 1);
     int listenfd, *connfdp;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;  /* Enough space for any address */  //line:netp:echoserveri:sockaddrstorage
@@ -78,9 +80,12 @@ void *thread(void *vargp){
                     // currently case sensitive. Should cast username to Lower 
                     if(checkLogin(command.strings[1], command.strings[2])) {
                         loggedin=1;
+                        // lock so they wont be assigned same spot in array
+                        P(&mutex);
                         add_to_connect_list(command.strings[1],
                                             command.strings[3], 
                                             command.strings[4], fd);
+                        V(&mutex);
                         char *msg = "1\nLogin success\n";
                         Rio_writen(fd, msg, strlen(msg)); 
                     } else {
@@ -104,11 +109,9 @@ void *thread(void *vargp){
                                 char *msg = "1\nYou are already logged in\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == lookup_command) {
-                                printf("LEWKUP %s\n", command.strings[1]);
                                 char msg[MAXLINE];
                                 int toPrint = print_user_info(command.strings[1], msg);
                                 char send[20];
-                                printf("%i, %s\n", toPrint, msg);
                                 sprintf(send, "%i\n", toPrint);
                                 strcat(send, msg);
                                 Rio_writen(fd, send, strlen(send));
