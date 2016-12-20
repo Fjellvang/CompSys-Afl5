@@ -13,18 +13,30 @@ void init_connect_list(){
     }
 }
 
-int add_to_connect_list(char *client_hostname, char *client_port){
+int add_to_connect_list(char *nick, char *client_hostname, char *client_port, int fd){
     for(int i = 0; i < MAXCONNECTIONS; i++){
         if(connected_list[i].active == -1){
             connected_list[i].active = 1;
             strcpy(connected_list[i].client_port, client_port);
             strcpy(connected_list[i].client_hostname, client_hostname);
+            strcpy(connected_list[i].nick, nick);
+            connected_list[i].fd = fd;
             return 1;
         }
     }
     // not enough space
     printf("NO MOAR SPACE MAN \n");
     return -1;
+}
+
+int remove_from_connect_list(int fd) {
+    for(int i = 0; i < MAXCONNECTIONS; i++) {
+        if (connected_list[i].fd == fd) {
+            connected_list[i].active = -1;            
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int npeersconnected(){
@@ -36,7 +48,6 @@ int npeersconnected(){
         }
     }
     return n;
-
 }
 
 void print_connected_list(){
@@ -47,6 +58,23 @@ void print_connected_list(){
         }
     }
 }
+int print_user_info(char *nick, char *tosend) {
+    int nrOfnewline = 1;
+    char* name = strtok(nick, "\n");
+    printf("name newline: %s or no\n", name);
+    for(int i = 0; i < MAXCONNECTIONS; i++) {
+        if(!strcmp(connected_list[i].nick, nick)) {
+            sprintf(tosend, "%s is online\nHost: %s\nPort: %s\n", nick, 
+                connected_list[i].client_hostname,
+                connected_list[i].client_port);
+            nrOfnewline = nrOfnewline + 3;
+            return nrOfnewline;
+        }
+    }
+    sprintf(tosend, "%s is not a valid user\n", nick);
+    nrOfnewline = nrOfnewline + 1;
+    return nrOfnewline;
+}
 
 int prints_connected_list(char* tosend){
     int nrOfnewline = 0;    
@@ -56,14 +84,12 @@ int prints_connected_list(char* tosend){
     nrOfnewline = nrOfnewline + 1;
     for(int i = 0; i < MAXCONNECTIONS; i++){
         if(connected_list[i].active == 1){
-            printf("active at i:%i\n", i);
-            printf("%s",tosend);
-            sprintf(tmp, "Host: %s\nPort: %s\n", connected_list[i].client_hostname, connected_list[i].client_port);
-            nrOfnewline = nrOfnewline + 2;
-            printf("%s",tmp);
+            sprintf(tmp, "Nick: %s\nHost: %s\nPort: %s\n",connected_list[i].nick, connected_list[i].client_hostname, connected_list[i].client_port);
+            nrOfnewline = nrOfnewline + 3;
             strcat(tosend, tmp);
         }
-        printf("inactive at i:%i\n", i);
     }
+    // add nr of peers to make sure we get the right amount of reads from client
+    nrOfnewline += npeers;
     return nrOfnewline;
 }

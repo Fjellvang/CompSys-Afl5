@@ -28,6 +28,7 @@ int main()
     while(Fgets(buf, MAXLINE, stdin) != NULL) {
         Rio_writen(clientfd, buf, strlen(buf));
         Rio_readlineb(&rio, buf, MAXLINE);
+
         int toread = atoi(buf);
         linestoread(toread, &rio);
     }

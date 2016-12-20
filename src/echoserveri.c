@@ -15,7 +15,8 @@ typedef struct {
 } user_t;
 
 user_t registered_users[MAXUSERS];
-int login(char *c);
+sem_t mutex;
+
 int checkLogin(char *username, char *password);
 
 int main(int argc, char **argv) 
@@ -23,6 +24,10 @@ int main(int argc, char **argv)
     //add a user
     strcpy(registered_users[0].usrname, "user");
     strcpy(registered_users[0].pswrd, "password");
+    strcpy(registered_users[1].usrname, "jesus");
+    strcpy(registered_users[1].pswrd, "christ");
+    strcpy(registered_users[2].usrname, "saddam");
+    strcpy(registered_users[2].pswrd, "hussein");
     //init list for connections
     init_connect_list();
 
@@ -30,9 +35,7 @@ int main(int argc, char **argv)
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;  /* Enough space for any address */  //line:netp:echoserveri:sockaddrstorage
     char client_hostname[MAXLINE], client_port[MAXLINE];
-    //thread table for 20 connections
     pthread_t tid; //[MAXCONNECTIONS]; 
-    //int tindex = 0;
 
     if (argc != 2) {
         fprintf(stderr, "usage: %s <port>\n", argv[0]);
@@ -44,18 +47,9 @@ int main(int argc, char **argv)
     	clientlen = sizeof(struct sockaddr_storage); 
         connfdp = Malloc(sizeof(int));
     	*connfdp = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-        //if(login(*connfdp)) {
-            // læs fra fd, se om login / pass passer
         Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAXLINE, 
                     client_port, MAXLINE, 0);
-        add_to_connect_list(client_hostname, client_port);	
-        print_connected_list();
-        Pthread_create(&tid/*&tid[tindex]*/, NULL, thread, (void *)connfdp);
-        /*} else {
-            char* msg = "Connection refused";
-            int fd = *((int*)connfdp);
-            Rio_writen(fd, msg, sizeof(msg));
-        }*/
+        Pthread_create(&tid, NULL, thread, (void *)connfdp);
     }
     exit(0);
 }
@@ -81,8 +75,12 @@ void *thread(void *vargp){
                 cmd_t command;
                 int cmd_i = getCmd(buf, &command);
                 if(cmd_i == join_command){
+                    // currently case sensitive. Should cast username to Lower 
                     if(checkLogin(command.strings[1], command.strings[2])) {
                         loggedin=1;
+                        add_to_connect_list(command.strings[1],
+                                            command.strings[3], 
+                                            command.strings[4], fd);
                         char *msg = "1\nLogin success\n";
                         Rio_writen(fd, msg, strlen(msg)); 
                     } else {
@@ -106,25 +104,33 @@ void *thread(void *vargp){
                                 char *msg = "1\nYou are already logged in\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == lookup_command) {
-                                
+                                printf("LEWKUP %s\n", command.strings[1]);
+                                char msg[MAXLINE];
+                                int toPrint = print_user_info(command.strings[1], msg);
+                                char send[20];
+                                printf("%i, %s\n", toPrint, msg);
+                                sprintf(send, "%i\n", toPrint);
+                                strcat(send, msg);
+                                Rio_writen(fd, send, strlen(send));
                             } else if(cmd_i == logout_command) {
                                 loggedin = 0;
+                                remove_from_connect_list(fd);
                                 char *msg = "1\nYou logged out\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == exit_command) {
                                 loggedin = 0;
                                 exited = 1;
+                                remove_from_connect_list(fd);
                                 char *msg = "1\nYou logged out, and exited\n";
                                 Rio_writen(fd, msg, strlen(msg));
                             } else if(cmd_i == lookup2_command) {
-                                printf("start of LP2\n");
                                 char msg[MAXLINE];
                                 int toPrint = prints_connected_list(msg);
+                                //amount of lines client should read
                                 char send[20];
-                                printf("after prints\n");
                                 sprintf(send, "%i\n", toPrint);
+                                // concat everything to a whole string
                                 strcat(send, msg);
-                                printf("before write");
                                 Rio_writen(fd, send, strlen(send));
                             } else {
                                 char *msg = "1\nUnrecognized command\n"; 
@@ -147,22 +153,6 @@ void *thread(void *vargp){
     return NULL;
 }
 
-int login(char *c) 
-{
-    cmd_t command;
-    int cmd_i = getCmd(c, &command);
-    if(cmd_i == join_command) {
-        if(checkLogin(command.strings[1], command.strings[2])){
-            printf("Login success!\n");
-            return 1;
-        }
-        else{ 
-            printf("Login refused");
-            return 0;
-        }
-    }
-    return 0;
-}
 
 int checkLogin(char *username, char *password){
     for(int i = 0; i < MAXUSERS; i++) {
