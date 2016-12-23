@@ -17,8 +17,6 @@ enum cmds {
     exit_command,
     lookup2_command
 };
-// if we have / as first char, we have a command. call this func on a string with a cmd
-cmd_t handlecmd(char *c);
 
 // If we have a string with a cmd. this function chunks the string up, and puts them
 // in the strings array

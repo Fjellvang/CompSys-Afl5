@@ -14,6 +14,7 @@ int getCmd(char *c, cmd_t *command){
     token = strtok(c, s);
     command->numargs = 0;    
     while ( token != NULL) {
+        // strtok chunks up the string and puts them in struct array
         if((command->numargs < 5)){
             strcpy(command->strings[command->numargs], token);
         } else {
@@ -59,22 +60,3 @@ const char* getcmdstring(int i){
     }
 }
 
-cmd_t handlecmd(char *c){
-    char tmp[MAXLINE];
-    strcpy(tmp, c);
-    cmd_t command;
-    command.cmd = getCmd(tmp, &command);
-
-    switch(command.cmd) {
-        case join_command:
-            if(command.numargs != 5){
-                printf("join: Too few arguments");
-            } 
-            return command;
-        case lookup_command:
-        case logout_command:
-        case exit_command:
-            break;
-    }
-    return command;
-}

@@ -5,11 +5,6 @@
 #include "csapp.h"
 
 
-typedef struct {
-    int loggedin;
-    char my_hostname[MAXLINE];
-    char my_port[MAXLINE];  
-} client;
 
 
 void linestoread(int x, rio_t *rio);
